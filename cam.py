@@ -1,7 +1,7 @@
 import cv2
 from picamera2 import Picamera2
 piCam  = Picamera2()
-piCam.preview_configuration.main.size = (1280, 720)
+piCam.preview_configuration.main.size = (800, 600)
 piCam.preview_configuration.main.format = "RGB888"
 piCam.preview_configuration.align()
 piCam.configure("preview")

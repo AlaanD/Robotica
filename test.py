@@ -10,7 +10,7 @@ def init():
     gpio.setup(23, gpio.OUT)
     gpio.setup(24, gpio.OUT)
 
-def forward(sec):
+def turn_self(sec):
     init()
     gpio.output(17, True)
     gpio.output(22, False)
@@ -37,7 +37,7 @@ def left_turn(sec):
     time.sleep(sec)
     gpio.cleanup()
 
-def turn_self(sec):
+def forward(sec):
     init()
 
     # GIRO EN EL LUGAR 
@@ -76,7 +76,7 @@ curses.wrapper(main)
 gpio.cleanup()
 
 
-# seconds = 5
+seconds = 5
 # time.sleep(seconds)
 # print("forward")
 # forward(seconds)
@@ -90,4 +90,5 @@ gpio.cleanup()
 # forward(seconds)
 main()
 time.sleep(seconds-2)
+gpio.cleanup()
 
