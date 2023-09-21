@@ -9,6 +9,13 @@ GPIO.setup (13,GPIO.OUT)
 GPIO.setup (15,GPIO.OUT)
 GPIO.setup (16,GPIO.OUT)
 
+def limpiar_recursos():
+    GPIO.output(11,False)
+    GPIO.output(13,False)
+    GPIO.output(16,False)
+    GPIO.output(15,False)
+    GPIO.cleanup()
+
 def forward():
     GPIO.output(11,GPIO.LOW)
     GPIO.output(13,GPIO.HIGH)
@@ -48,6 +55,7 @@ def main(letra):
         key = letra.getch()
         if key == 113:
             inicio = False
+            limpiar_recursos()
         elif key == 119:
             print("adelante")
             forward()
@@ -60,8 +68,5 @@ def main(letra):
         elif key == 100:
             print("derecha")
             turn_right()
-        else:
-            print("detenido")
 
 curses.wrapper(main)
-GPIO.cleanup()
