@@ -1,26 +1,62 @@
+# Importar librerías
+import numpy as np
 import cv2
 import math
 
-# Altura del objeto, altura de la cámara y ángulo de inclinación de la cámara en grados
-h_objeto = 0.08  # metros
-h_camara = 0.09  # metros
-angulo_grados = 0  # grados
+# Leer imagen
+img = cv2.imread("botella.jpg")
 
-# Cargar una imagen o capturar un fotograma desde una cámara
-# En este ejemplo, cargaremos una imagen
-imagen = cv2.imread('tu_imagen.jpg')
+# Convertir a escala de grises
+gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
-# Convertir el ángulo de grados a radianes
-angulo_radianes = math.radians(angulo_grados)
+# Aplicar filtro de Canny
+edges = cv2.Canny(gray, 50, 150)
 
-# Calcular la distancia
-distancia = (h_objeto - h_camara) / math.tan(angulo_radianes)
+# Encontrar contornos
+contours, hierarchy = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-# Mostrar la distancia en la imagen
-font = cv2.FONT_HERSHEY_SIMPLEX
-cv2.putText(imagen, f'Distancia: {distancia:.2f} metros', (10, 30), font, 1, (0, 0, 255), 2)
+# Dibujar contornos sobre la imagen original
+cv2.drawContours(img, contours, -1, (0, 255, 0), 2)
 
-# Mostrar la imagen con la distancia
-cv2.imshow('Imagen con Distancia', imagen)
+# Calcular el área de cada contorno
+areas = [cv2.contourArea(c) for c in contours]
+
+# Seleccionar los dos contornos más grandes
+sorted_areas = np.argsort(areas)
+cnt1 = contours[sorted_areas[-1]] # Objeto a medir
+cnt2 = contours[sorted_areas[-2]] # Objeto de referencia
+
+# Calcular el ancho en píxeles de cada contorno
+rect1 = cv2.minAreaRect(cnt1)
+box1 = cv2.boxPoints(rect1)
+box1 = np.int0(box1)
+w1 = max(rect1[1]) # Ancho del objeto a medir
+
+rect2 = cv2.minAreaRect(cnt2)
+box2 = cv2.boxPoints(rect2)
+box2 = np.int0(box2)
+w2 = max(rect2[1]) # Ancho del objeto de referencia
+
+# Dibujar los rectángulos mínimos sobre la imagen original
+cv2.drawContours(img,[box1],0,(0,0,255),2)
+cv2.drawContours(img,[box2],0,(255,0,0),2)
+
+# Definir el tamaño del objeto de referencia (hoja A4) en centímetros
+W = 21
+
+# Definir la distancia del objeto de referencia a la cámara en centímetros
+D = 30
+
+# Calcular la distancia focal de la cámara
+f = (w2 * D) / W
+
+# Calcular la distancia del objeto a medir a la cámara
+d = (W * f) / w1
+
+# Mostrar el resultado en la pantalla
+print("La distancia del objeto a medir a la cámara es: {:.2f} cm".format(d))
+
+# Mostrar la imagen con los contornos y los rectángulos
+cv2.imshow("Imagen", img)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
