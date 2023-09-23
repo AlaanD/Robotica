@@ -12,7 +12,7 @@ def arranque():
     GPIO.setup (15,GPIO.OUT)
     GPIO.setup (16,GPIO.OUT)
 
-def liberar_recursos(inicio):
+def liberar_recursos(inicio = True):
     GPIO.output(11,False)
     GPIO.output(13,False)
     GPIO.output(16,False)
@@ -26,6 +26,11 @@ def forward(tiempo = 2):
     GPIO.output(16,GPIO.HIGH)
     GPIO.output(15,GPIO.LOW)
     time.sleep(tiempo)
+
+    GPIO.output(11,False)
+    GPIO.output(13,False)
+    GPIO.output(16,False)
+    GPIO.output(15,False)
 
 def reverse(tiempo = 2):
     GPIO.output(11,GPIO.HIGH)
@@ -48,12 +53,36 @@ def turn_right(tiempo = 1):
     GPIO.output(15,GPIO.LOW)
     time.sleep(tiempo)
 
+def giro_90_izq(tiempo):
+    #reverse
+    GPIO.output(11,GPIO.HIGH)
+    GPIO.output(13,GPIO.LOW)
+    GPIO.output(16,GPIO.LOW)
+    GPIO.output(15,GPIO.HIGH)
+    time.sleep(tiempo - 0.7)
+
+    #left
+    GPIO.output(11,GPIO.LOW)
+    GPIO.output(13,GPIO.HIGH)
+    GPIO.output(16,False)
+    GPIO.output(15,False)
+    time.sleep(tiempo)
+
+    #clean res
+    GPIO.output(11,False)
+    GPIO.output(13,False)
+    GPIO.output(16,False)
+    GPIO.output(15,False)
+
 tiempo_giro = 0
 arranque()
 
 cap = cv2.VideoCapture(0)
 cap.set(3, 640)
 cap.set(4, 480)
+azul_completado = False
+rojo_completado = False
+amarillo_completado = False
 
 while True:
     ret, frame = cap.read()
@@ -109,11 +138,17 @@ while True:
             # Calcula el área total de la imagen
             total_area = frame.shape[0] * frame.shape[1]
 
-            # Verifica si el área del contorno es igual al área total (100%)
-            if math.trunc(area) >= math.trunc(total_area) * 0.8:
+            # Si el area es menor 75%
+            if math.trunc(area) <= math.trunc(total_area) * 0.75 and not azul_completado:
                 if(color_detected == 'Azul'):
-                    turn_left(0.15)
-                    print(f"El color {color_detected} ocupa el 100% de la pantalla.")
+                    forward(15)
+                    azul_completado = True
+
+            # Verifica si el área del contorno es igual al área total (75%)
+            if math.trunc(area) >= math.trunc(total_area) * 0.75 and not azul_completado:
+                if(color_detected == 'Azul'):
+                    giro_90_izq(1.3)
+                    azul_completado = True
                     
                     
     cv2.imshow("Video", frame)
