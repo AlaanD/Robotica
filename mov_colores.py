@@ -1,5 +1,55 @@
-import cv2
 import numpy as np
+import cv2
+import math
+import RPi.GPIO as GPIO
+from time import sleep
+import time
+
+def arranque():
+    GPIO.setmode (GPIO.BOARD)
+    GPIO.setup (11,GPIO.OUT)
+    GPIO.setup (13,GPIO.OUT)
+    GPIO.setup (15,GPIO.OUT)
+    GPIO.setup (16,GPIO.OUT)
+
+def liberar_recursos(inicio):
+    GPIO.output(11,False)
+    GPIO.output(13,False)
+    GPIO.output(16,False)
+    GPIO.output(15,False)
+    if (inicio == False):
+        GPIO.cleanup()
+
+def forward(tiempo = 2):
+    GPIO.output(11,GPIO.LOW)
+    GPIO.output(13,GPIO.HIGH)
+    GPIO.output(16,GPIO.HIGH)
+    GPIO.output(15,GPIO.LOW)
+    time.sleep(tiempo)
+
+def reverse(tiempo = 2):
+    GPIO.output(11,GPIO.HIGH)
+    GPIO.output(13,GPIO.LOW)
+    GPIO.output(16,GPIO.LOW)
+    GPIO.output(15,GPIO.HIGH)
+    time.sleep(tiempo)
+
+def turn_left(tiempo = 1):
+    GPIO.output(11,GPIO.LOW)
+    GPIO.output(13,GPIO.HIGH)
+    GPIO.output(16,False)
+    GPIO.output(15,False)
+    time.sleep(tiempo)
+
+def turn_right(tiempo = 1):
+    GPIO.output(11,False)
+    GPIO.output(13,False)
+    GPIO.output(16,GPIO.HIGH)
+    GPIO.output(15,GPIO.LOW)
+    time.sleep(tiempo)
+
+tiempo_giro = 0
+arranque()
 
 cap = cv2.VideoCapture(0)
 cap.set(3, 640)
@@ -35,7 +85,7 @@ while True:
 
     for contour in contours:
         area = cv2.contourArea(contour)
-        
+
         if area > 500:
             # Calcula el centro del contorno
             M = cv2.moments(contour)
@@ -55,8 +105,17 @@ while True:
             # Dibuja el contorno y muestra el color detectado
             cv2.drawContours(frame, [contour], -1, (0, 255, 0), 3)
             cv2.putText(frame, color_detected, (cx - 20, cy - 20), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
-            print(f"Estoy en el color {color_detected}")
 
+            # Calcula el área total de la imagen
+            total_area = frame.shape[0] * frame.shape[1]
+
+            # Verifica si el área del contorno es igual al área total (100%)
+            if math.trunc(area) >= math.trunc(total_area) * 0.8:
+                if(color_detected == 'Azul'):
+                    turn_left(0.15)
+                    print(f"El color {color_detected} ocupa el 100% de la pantalla.")
+                    
+                    
     cv2.imshow("Video", frame)
     k = cv2.waitKey(1)
     if k == 113:

@@ -3,11 +3,12 @@ from time import sleep
 import time
 import curses
 
-GPIO.setmode (GPIO.BOARD)
-GPIO.setup (11,GPIO.OUT)
-GPIO.setup (13,GPIO.OUT)
-GPIO.setup (15,GPIO.OUT)
-GPIO.setup (16,GPIO.OUT)
+def arranque():
+    GPIO.setmode (GPIO.BOARD)
+    GPIO.setup (11,GPIO.OUT)
+    GPIO.setup (13,GPIO.OUT)
+    GPIO.setup (15,GPIO.OUT)
+    GPIO.setup (16,GPIO.OUT)
 
 def liberar_recursos(inicio):
     GPIO.output(11,False)
@@ -70,11 +71,15 @@ def main(letra):
             print("derecha")
             turn_right()
             tiempo_giro = time.time() + 0.5
-        
+        elif key == 101:
+            print("detener")
+            liberar_recursos(inicio)
+
         # Comprobar si el tiempo de giro ha pasado y detener el giro
         if tiempo_giro > 0 and time.time() >= tiempo_giro:
             liberar_recursos(inicio)
             tiempo_giro = 0
 
 tiempo_giro = 0
+arranque()
 curses.wrapper(main)
