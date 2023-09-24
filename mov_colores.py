@@ -54,21 +54,19 @@ def turn_right(tiempo = 1):
     time.sleep(tiempo)
 
 def giro_90_izq(tiempo):
-    #reverse
+    # reverse
     GPIO.output(11,GPIO.HIGH)
     GPIO.output(13,GPIO.LOW)
     GPIO.output(16,GPIO.LOW)
     GPIO.output(15,GPIO.HIGH)
     time.sleep(tiempo - 0.7)
-
-    #left
+    # left
     GPIO.output(11,GPIO.LOW)
     GPIO.output(13,GPIO.HIGH)
     GPIO.output(16,False)
     GPIO.output(15,False)
     time.sleep(tiempo)
-
-    #clean res
+    
     GPIO.output(11,False)
     GPIO.output(13,False)
     GPIO.output(16,False)
@@ -84,33 +82,31 @@ azul_completado = False
 rojo_completado = False
 amarillo_completado = False
 
+# Define los rangos de color para los colores a detectar
+yellow_lower = np.array([20, 100, 100])
+yellow_upper = np.array([30, 255, 255])
+
+red_lower = np.array([0, 100, 100])
+red_upper = np.array([10, 255, 255])
+
+blue_lower = np.array([90, 100, 100])
+blue_upper = np.array([130, 255, 255])
+
 while True:
     ret, frame = cap.read()
     if not ret:
         break
-
+    
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-
-    # Define los rangos de color para los colores a detectar
-    yellow_lower = np.array([20, 100, 100])
-    yellow_upper = np.array([30, 255, 255])
-
-    red_lower = np.array([0, 100, 100])
-    red_upper = np.array([10, 255, 255])
-
-    blue_lower = np.array([90, 100, 100])
-    blue_upper = np.array([130, 255, 255])
-
     # Crea máscaras para cada color
     mask_yellow = cv2.inRange(hsv, yellow_lower, yellow_upper)
     mask_red = cv2.inRange(hsv, red_lower, red_upper)
     mask_blue = cv2.inRange(hsv, blue_lower, blue_upper)
-
-    # Combina las máscaras para detectar varios colores
     combined_mask = cv2.bitwise_or(mask_yellow, cv2.bitwise_or(mask_red, mask_blue))
-
     # Encuentra contornos en la máscara combinada
     contours, _ = cv2.findContours(combined_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    # Combina las máscaras para detectar varios colores
+    
 
     for contour in contours:
         area = cv2.contourArea(contour)
@@ -139,14 +135,14 @@ while True:
             total_area = frame.shape[0] * frame.shape[1]
 
             # Si el area es menor 75%
-            if math.trunc(area) <= math.trunc(total_area) * 0.75 and not azul_completado:
-                if(color_detected == 'Azul'):
-                    forward(15)
-                    azul_completado = True
+            # if math.trunc(area) <= math.trunc(total_area) * 0.75 and not azul_completado:
+            #     if(color_detected == 'Azul'):
+            #         forward(15)
+            #         azul_completado = True
 
             # Verifica si el área del contorno es igual al área total (75%)
             if math.trunc(area) >= math.trunc(total_area) * 0.75 and not azul_completado:
-                if(color_detected == 'Azul'):
+                if(color_detected == 'Rojo'):
                     giro_90_izq(1.3)
                     azul_completado = True
                     
