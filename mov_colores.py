@@ -107,7 +107,6 @@ while True:
     contours, _ = cv2.findContours(combined_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     # Combina las máscaras para detectar varios colores
     
-
     for contour in contours:
         area = cv2.contourArea(contour)
 
@@ -134,17 +133,17 @@ while True:
             # Calcula el área total de la imagen
             total_area = frame.shape[0] * frame.shape[1]
 
-            # Si el area es menor 75%
-            # if math.trunc(area) <= math.trunc(total_area) * 0.75 and not azul_completado:
-            #     if(color_detected == 'Azul'):
-            #         forward(15)
-            #         azul_completado = True
-
-            # Verifica si el área del contorno es igual al área total (75%)
-            if math.trunc(area) >= math.trunc(total_area) * 0.75 and not azul_completado:
-                if(color_detected == 'Rojo'):
-                    giro_90_izq(1.3)
+            #Si el area es menor 75%
+            if math.trunc(area) <= math.trunc(total_area) * 0.75 and not azul_completado:
+                if(color_detected == 'Azul'):
+                    forward(15)
                     azul_completado = True
+
+            # # Verifica si el área del contorno es igual al área total (75%)
+            # if math.trunc(area) >= math.trunc(total_area) * 0.75 and not azul_completado:
+            #     if(color_detected == 'Rojo'):
+            #         giro_90_izq(1.3)
+            #         azul_completado = True
                     
                     
     cv2.imshow("Video", frame)

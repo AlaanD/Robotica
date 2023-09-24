@@ -1,55 +1,92 @@
 import numpy as np
 import cv2
 import math
-# import RPi.GPIO as GPIO
+import RPi.GPIO as GPIO
 from time import sleep
-from time import time
-#
-
+import time
 
 def arranque():
-    print("arranque")
+    GPIO.setmode (GPIO.BOARD)
+    GPIO.setup (11,GPIO.OUT)
+    GPIO.setup (13,GPIO.OUT)
+    GPIO.setup (15,GPIO.OUT)
+    GPIO.setup (16,GPIO.OUT)
 
+def liberar_recursos(inicio = True):
+    GPIO.output(11,False)
+    GPIO.output(13,False)
+    GPIO.output(16,False)
+    GPIO.output(15,False)
+    if (inicio == False):
+        GPIO.cleanup()
 
-def liberar_recursos(inicio=True):
-    print("libere recursos")
+def forward(tiempo = 2):
+    GPIO.output(11,GPIO.LOW)
+    GPIO.output(13,GPIO.HIGH)
+    GPIO.output(16,GPIO.HIGH)
+    GPIO.output(15,GPIO.LOW)
+    time.sleep(tiempo)
 
+    GPIO.output(11,False)
+    GPIO.output(13,False)
+    GPIO.output(16,False)
+    GPIO.output(15,False)
 
-def forward(tiempo=2):
-    print("adelante")
+def reverse(tiempo = 2):
+    GPIO.output(11,GPIO.HIGH)
+    GPIO.output(13,GPIO.LOW)
+    GPIO.output(16,GPIO.LOW)
+    GPIO.output(15,GPIO.HIGH)
+    time.sleep(tiempo)
 
+def turn_left(tiempo = 1):
+    GPIO.output(11,GPIO.LOW)
+    GPIO.output(13,GPIO.HIGH)
+    GPIO.output(16,False)
+    GPIO.output(15,False)
+    time.sleep(tiempo)
 
-def reverse(tiempo=2):
-    print("atras")
-
-
-def turn_left(tiempo=1):
-    print("izquierda")
-
-
-def turn_right(tiempo=1):
-    print("derecha")
-
+def turn_right(tiempo = 1):
+    GPIO.output(11,False)
+    GPIO.output(13,False)
+    GPIO.output(16,GPIO.HIGH)
+    GPIO.output(15,GPIO.LOW)
+    time.sleep(tiempo)
 
 def giro_90_izq(tiempo):
     # reverse
-    print("90° izq")
+    GPIO.output(11,GPIO.HIGH)
+    GPIO.output(13,GPIO.LOW)
+    GPIO.output(16,GPIO.LOW)
+    GPIO.output(15,GPIO.HIGH)
+    time.sleep(tiempo - 0.7)
+    # left
+    GPIO.output(11,GPIO.LOW)
+    GPIO.output(13,GPIO.HIGH)
+    GPIO.output(16,False)
+    GPIO.output(15,False)
+    time.sleep(tiempo)
+    
+    GPIO.output(11,False)
+    GPIO.output(13,False)
+    GPIO.output(16,False)
+    GPIO.output(15,False)
 
-
-tiempo_giro = 0
 arranque()
 
 cap = cv2.VideoCapture(0)
 cap.set(3, 800)
 cap.set(4, 640)
+
 azul_completado = False
 rojo_completado = False
 amarillo_completado = False
-# 0 rojo, 1 amariillo, 2 azul
+
+# 0 rojo, 1 amarillo, 2 azul
 color_actual = 0
-colores = ["Rojo", "Amarillo", "Azul"]
-max_no_detection_time = 2
-no_detection_timer = time()
+color = "Rojo"
+bandera=False
+
 
 while True:
     ret, frame = cap.read()
@@ -57,9 +94,7 @@ while True:
         break
 
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-
-    color = colores[color_actual]
-
+    
     # Define los rangos de color para los colores a detectar
     if color == "Rojo":
         lower = np.array([0, 100, 100])
@@ -101,35 +136,55 @@ while True:
 
             # Verifica si el objeto está centrado en la pantalla
             if abs(cx - frame.shape[1] // 2) < 50:
-                forward(0.5)  # Avanza si el objeto está centrado
+                forward(4) 
+                
+            elif cx < frame.shape[1] // 2: ###posible control, turn left until abs(cx - frame.shape[1] // 2) < 50:
+                turn_left(0.2)
+            else:
+                turn_right(0.2)
 
-            if (color_actual == 3):
+            if (azul_completado):
                 print("finalizar con pirueta")
                 break
 
-            if math.trunc(area) >= math.trunc(frame.shape[0] * frame.shape[1] * 0.60):
+            total_area=frame.shape[0] * frame.shape[1]
+            
+            if math.trunc(area) <= math.trunc(total_area) * 0.75 and not rojo_completado:
                 if color_actual == 0:
                     color = 'Amarillo'
+                    rojo_completado=True
+                    giro_90_izq(1.5)
+                    continue
+
+            elif math.trunc(area) <= math.trunc(total_area) * 0.75 and not amarillo_completado:
+                if color_actual == 1:
+                    color = 'Azul'
+                    amarillo_completado=True
+                    giro_90_izq(2.5)
+                    bandera=False
+
+            elif math.trunc(area) <= math.trunc(total_area) * 0.75 and not azul_completado:
+                if color_actual == 2:
+                    color = ''
+                    azul_completado=True
+                    giro_90_izq(5)
+
+            
+            if not contours:
+                if color_actual == 0:
+                    color = 'Amarillo'
+                    while (not bandera):
+                        giro_90_izq(1)
+                        if (abs(cx - frame.shape[1] // 2) < 50):
+                            bandera=True
+                            break
+
+                    
                 else:
                     color = 'Azul'
-
                 color_actual += 1
 
-            elif cx < frame.shape[1] // 2:
-                turn_left(0.5)
-            else:
-                turn_right(0.5)
-
-            if not contours:
-                current_time = time()
-                if current_time - no_detection_timer >= max_no_detection_time:
-                    if color_actual == 0:
-                        color = 'Amarillo'
-                    else:
-                        color = 'Azul'
-                    color_actual += 1
-                    no_detection_timer = current_time  # Reinicia temporizador
-                    turn_left(1)
+                turn_left(1)
 
     cv2.imshow("Video", frame)
     k = cv2.waitKey(1)
