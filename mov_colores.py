@@ -39,6 +39,12 @@ def reverse(tiempo = 2):
     GPIO.output(15,GPIO.HIGH)
     time.sleep(tiempo)
 
+    GPIO.output(11,False)
+    GPIO.output(13,False)
+    GPIO.output(16,False)
+    GPIO.output(15,False)
+
+
 def turn_left(tiempo = 1):
     GPIO.output(11,GPIO.LOW)
     GPIO.output(13,GPIO.HIGH)
@@ -46,12 +52,24 @@ def turn_left(tiempo = 1):
     GPIO.output(15,False)
     time.sleep(tiempo)
 
+    GPIO.output(11,False)
+    GPIO.output(13,False)
+    GPIO.output(16,False)
+    GPIO.output(15,False)
+
+
 def turn_right(tiempo = 1):
     GPIO.output(11,False)
     GPIO.output(13,False)
     GPIO.output(16,GPIO.HIGH)
     GPIO.output(15,GPIO.LOW)
     time.sleep(tiempo)
+
+    GPIO.output(11,False)
+    GPIO.output(13,False)
+    GPIO.output(16,False)
+    GPIO.output(15,False)
+
 
 def giro_90_izq(tiempo):
     # reverse
@@ -140,10 +158,10 @@ while True:
                     azul_completado = True
 
             # # Verifica si el área del contorno es igual al área total (75%)
-            # if math.trunc(area) >= math.trunc(total_area) * 0.75 and not azul_completado:
-            #     if(color_detected == 'Rojo'):
-            #         giro_90_izq(1.3)
-            #         azul_completado = True
+            if math.trunc(area) >= math.trunc(total_area) * 0.75 and not azul_completado:
+                if(color_detected == 'Rojo'):
+                    giro_90_izq(1.3)
+                    azul_completado = True
                     
                     
     cv2.imshow("Video", frame)

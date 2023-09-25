@@ -84,7 +84,7 @@ amarillo_completado = False
 
 # 0 rojo, 1 amarillo, 2 azul
 color_actual = 0
-color = "Rojo"
+colores = ["Rojo", "Amarillo", "Azul"]
 bandera=False
 
 
@@ -94,6 +94,8 @@ while True:
         break
 
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    
+    color = colores[color_actual]
     
     # Define los rangos de color para los colores a detectar
     if color == "Rojo":
@@ -136,12 +138,15 @@ while True:
 
             # Verifica si el objeto está centrado en la pantalla
             if abs(cx - frame.shape[1] // 2) < 50:
-                forward(4) 
+                forward(0.5) 
+                time.sleep(0.5)
                 
             elif cx < frame.shape[1] // 2: ###posible control, turn left until abs(cx - frame.shape[1] // 2) < 50:
-                turn_left(0.2)
+                turn_left(0.05)
+                time.sleep(0.05)
             else:
-                turn_right(0.2)
+                turn_right(0.05)
+                time.sleep(0.05)
 
             if (azul_completado):
                 print("finalizar con pirueta")
@@ -151,13 +156,15 @@ while True:
             
             if math.trunc(area) <= math.trunc(total_area) * 0.75 and not rojo_completado:
                 if color_actual == 0:
+                    print('Primerif')
                     color = 'Amarillo'
                     rojo_completado=True
-                    giro_90_izq(1.5)
+                    # giro_90_izq(1.5)
                     continue
 
             elif math.trunc(area) <= math.trunc(total_area) * 0.75 and not amarillo_completado:
                 if color_actual == 1:
+                    print('Segundoif')
                     color = 'Azul'
                     amarillo_completado=True
                     giro_90_izq(2.5)
@@ -165,6 +172,7 @@ while True:
 
             elif math.trunc(area) <= math.trunc(total_area) * 0.75 and not azul_completado:
                 if color_actual == 2:
+                    print('Tercerif')
                     color = ''
                     azul_completado=True
                     giro_90_izq(5)
@@ -173,6 +181,7 @@ while True:
             if not contours:
                 if color_actual == 0:
                     color = 'Amarillo'
+                    print('countours')
                     while (not bandera):
                         giro_90_izq(1)
                         if (abs(cx - frame.shape[1] // 2) < 50):
@@ -181,10 +190,14 @@ while True:
 
                     
                 else:
-                    color = 'Azul'
-                color_actual += 1
+                    print("assdasdasdasdasdasdasdadsad")
+                    # color = 'Azul'
+                    # while (not bandera):
+                    #     giro_90_izq(2)
+                    #     if (abs(cx - frame.shape[1] // 2) < 50):
+                    #         bandera=True
+                    #         break
 
-                turn_left(1)
 
     cv2.imshow("Video", frame)
     k = cv2.waitKey(1)

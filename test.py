@@ -5,10 +5,10 @@ import curses
 
 def arranque():
     GPIO.setmode (GPIO.BOARD)
-    GPIO.setup (11,GPIO.OUT)
-    GPIO.setup (13,GPIO.OUT)
     GPIO.setup (15,GPIO.OUT)
     GPIO.setup (16,GPIO.OUT)
+    GPIO.setup (11,GPIO.OUT)
+    GPIO.setup (13,GPIO.OUT)
 
 def liberar_recursos(inicio):
     GPIO.output(11,False)
@@ -26,10 +26,10 @@ def forward():
     time.sleep(2)
 
 def reverse():
+    GPIO.output(15,GPIO.HIGH)
+    GPIO.output(16,GPIO.LOW)
     GPIO.output(11,GPIO.HIGH)
     GPIO.output(13,GPIO.LOW)
-    GPIO.output(16,GPIO.LOW)
-    GPIO.output(15,GPIO.HIGH)
     time.sleep(2)
 
 def turn_left():
