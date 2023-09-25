@@ -94,21 +94,13 @@ cap.set(4, 480)
 
 azul_completado = False
 
-
 # 0 rojo, 1 amarillo, 2 azul
 color_actual = 'Rojo'
 colores = ["Rojo", "Amarillo", "Azul"]
 aux = 0
 
 while True:
-    grabbed = cap.grab()
-
-    if not grabbed:
-        break
-
-
-    ret, frame = cap.retrieve()
-    
+    ret, frame = cap.read()
     if not ret:
         break
 
