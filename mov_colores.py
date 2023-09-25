@@ -157,11 +157,11 @@ while True:
                     forward(15)
                     azul_completado = True
 
-            # # Verifica si el área del contorno es igual al área total (75%)
-            if math.trunc(area) >= math.trunc(total_area) * 0.75 and not azul_completado:
+            # # Verifica si el área del contorno es mayor o igual al área total (75%)
+            if math.trunc(area) >= math.trunc(total_area) * 0.75 and not rojo_completado:
                 if(color_detected == 'Rojo'):
                     giro_90_izq(1.3)
-                    azul_completado = True
+                    rojo_completado = True
                     
                     
     cv2.imshow("Video", frame)

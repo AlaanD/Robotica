@@ -4,6 +4,8 @@ import math
 import RPi.GPIO as GPIO
 from time import sleep
 import time
+# import threading
+# import queue
 
 def arranque():
     GPIO.setmode (GPIO.BOARD)
@@ -26,11 +28,7 @@ def forward(tiempo = 2):
     GPIO.output(16,GPIO.HIGH)
     GPIO.output(15,GPIO.LOW)
     time.sleep(tiempo)
-
-    GPIO.output(11,False)
-    GPIO.output(13,False)
-    GPIO.output(16,False)
-    GPIO.output(15,False)
+    liberar_recursos()
 
 def reverse(tiempo = 2):
     GPIO.output(11,GPIO.HIGH)
@@ -38,6 +36,7 @@ def reverse(tiempo = 2):
     GPIO.output(16,GPIO.LOW)
     GPIO.output(15,GPIO.HIGH)
     time.sleep(tiempo)
+    liberar_recursos()
 
 def turn_left(tiempo = 1):
     GPIO.output(11,GPIO.LOW)
@@ -45,6 +44,7 @@ def turn_left(tiempo = 1):
     GPIO.output(16,False)
     GPIO.output(15,False)
     time.sleep(tiempo)
+    liberar_recursos()
 
 def turn_right(tiempo = 1):
     GPIO.output(11,False)
@@ -52,6 +52,7 @@ def turn_right(tiempo = 1):
     GPIO.output(16,GPIO.HIGH)
     GPIO.output(15,GPIO.LOW)
     time.sleep(tiempo)
+    liberar_recursos()
 
 def giro_90_izq(tiempo):
     # reverse
@@ -83,10 +84,30 @@ rojo_completado = False
 amarillo_completado = False
 
 # 0 rojo, 1 amarillo, 2 azul
-color_actual = 0
+color_actual = 2
 colores = ["Rojo", "Amarillo", "Azul"]
 bandera = False
+comienzo = True
 
+# # Cola de mensajes para comunicar el fotograma capturado
+# frame_queue = queue.Queue()
+
+# # Función para mostrar el video en un hilo separado
+# def mostrar_video():
+#     while True:
+#         frame = frame_queue.get()
+#         if frame is None:
+#             break
+#         cv2.imshow("Video", frame)
+#         k = cv2.waitKey(1)
+#         if k == 113:
+#             break
+
+# # Crea un hilo para mostrar el video
+# video_thread = threading.Thread(target=mostrar_video)
+
+# # Inicia el hilo del video
+# video_thread.start()
 
 while True:
     ret, frame = cap.read()
@@ -122,10 +143,24 @@ while True:
     contours, _ = cv2.findContours(
         mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
+    #para esperar el procesamiento de la nueva captura de la imagen
+    # if (comienzo):
+    #     time.sleep(1)
+    #     comienzo = False
+    # else:
+    #     time.sleep(0.1)
+
+    # # Coloca una copia del fotograma en la cola
+    # frame_queue.put(frame.copy())
+
+    #print("while")
     for contour in contours:
+        
         area = cv2.contourArea(contour)
+        print(area)
 
         if area > 500:
+            print("area > 500")
             # Calcula el centro del contorno
             M = cv2.moments(contour)
             cx = int(M["m10"] / M["m00"])
@@ -138,15 +173,16 @@ while True:
 
             # Verifica si el objeto está centrado en la pantalla
             if abs(cx - frame.shape[1] // 2) < 50:
-                forward(0.5) 
-                time.sleep(0.5)
-                
+                forward(1.5)
+                comienzo = False
+                print("adel")
+
             elif cx < frame.shape[1] // 2: #posible control, turn left until abs(cx - frame.shape[1] // 2) < 50:
                 turn_left(0.05)
-                time.sleep(0.05)
+                print("izq")
             else:
                 turn_right(0.05)
-                time.sleep(0.05)
+                print("der")
 
             if (azul_completado):
                 print("finalizar con pirueta")
@@ -154,53 +190,39 @@ while True:
 
             total_area = frame.shape[0] * frame.shape[1]
             
-            if math.trunc(area) <= math.trunc(total_area) * 0.75 and not rojo_completado:
-                if color_actual == 0:
-                    print('Primerif')
-                    color = 'Amarillo'
-                    rojo_completado = True
-                    # giro_90_izq(1.5)
-                    continue
+            #Si el area es menor 75%
+            # if math.trunc(area) <= math.trunc(total_area) * 0.75 and not azul_completado:
+            #     if(color == 'Azul'):
+            #         forward(3)
 
-            elif math.trunc(area) <= math.trunc(total_area) * 0.75 and not amarillo_completado:
-                if color_actual == 1:
-                    print('Segundoif')
-                    color = 'Azul'
-                    amarillo_completado = True
-                    giro_90_izq(2.5)
-                    bandera=False
-
-            elif math.trunc(area) <= math.trunc(total_area) * 0.75 and not azul_completado:
+            if math.trunc(area) >= math.trunc(total_area) * 0.75 and not azul_completado:
                 if color_actual == 2:
                     print('Tercerif')
                     color = ''
                     azul_completado = True
-                    giro_90_izq(5)
+                    giro_90_izq(1.3)
 
-            
-            if not contours:
-                if color_actual == 0:
-                    color = 'Amarillo'
-                    print('countours')
-                    while (not bandera):
-                        giro_90_izq(1)
-                        if (abs(cx - frame.shape[1] // 2) < 50):
-                            bandera = True
-                            break
-          
-                else:
-                    print("assdasdasdasdasdasdasdadsad")
-                    # color = 'Azul'
-                    # while (not bandera):
-                    #     giro_90_izq(2)
-                    #     if (abs(cx - frame.shape[1] // 2) < 50):
-                    #         bandera=True
-                    #         break
+        # elif (area < 100 and comienzo == False):
+        #     turn_right(0.3)
+        #     print("area < 500")
+
+    if (len(contours) ==  0):
+        turn_right(0.3)
+        reverse(0.5)
+        print("contours 0")
+        print(area)
 
     cv2.imshow("Video", frame)
     k = cv2.waitKey(1)
     if k == 113:
         break
 
+# # Coloca un valor especial en la cola para indicar al hilo de video que debe detenerse
+# frame_queue.put(None)
+
+# # Espera a que el hilo del video termine antes de liberar recursos
+# video_thread.join()
+
 cap.release()
 cv2.destroyAllWindows()
+liberar_recursos(False)
