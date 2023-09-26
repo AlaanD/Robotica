@@ -72,7 +72,7 @@ def giro_90_izq(tiempo):
     GPIO.output(15,False)
 
 def giro_130_izq():
-    reverse(0.1)
+    reverse(0.8)
     turn_left(2)
 
 def vuelta_entera():
