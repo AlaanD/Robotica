@@ -98,12 +98,18 @@ busqueda_iniciada = False
 empezar = True
 
 k = cv2.waitKey(1)
+j = True
 
-z = input("Ingrese s para saludar")
-print("arrancar")
-forward(1)
-reverse(1)
-z = input("Ingrese s para empezar")
+while j:
+    z = input("Ingrese s para saludar")
+    if z == "s":
+        print("arrancar")
+        forward(1)
+        reverse(1)
+    z = ""
+    z = input("Ingrese s para empezar")
+    if z == "s":
+        j = False
 
 while not azul_completado and z == 's':
     ret, frame = cap.read()
