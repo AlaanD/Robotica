@@ -95,11 +95,23 @@ aux = 0
 area_prom = 0
 contador = 0
 busqueda_iniciada = False
+empezar = True
 
-while not azul_completado:
+k = cv2.waitKey(1)
+
+z = input("Ingrese s para saludar")
+print("arrancar")
+forward(1)
+reverse(1)
+z = input("Ingrese s para empezar")
+
+while not azul_completado and z == 's':
     ret, frame = cap.read()
     if not ret:
         break
+
+    if empezar:
+        cv2.imshow("Video", frame)
 
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
     
@@ -194,6 +206,7 @@ while not azul_completado:
         print("buscando meta")
 
     cv2.imshow("Video", frame)
+    empezar = False
     k = cv2.waitKey(1)
     if k == 113:
         break
