@@ -72,19 +72,13 @@ def giro_90_izq(tiempo):
     GPIO.output(15,False)
 
 def giro_130_izq():
+    reverse(0.1)
     turn_left(2)
 
 def vuelta_entera():
-    reverse(0.7)
-    turn_right(0.5)
-    forward(1.5)
-    turn_left(0.5)
-    forward(1.5)
-    turn_left(0.5)
-    forward(1)
-    turn_left(0.5)
-    forward(1)
-    turn_left(0.5)
+    reverse(1)
+    turn_right(4)
+    print("¡¡¡festejo!!!")
 
 arranque()
 
@@ -98,8 +92,11 @@ azul_completado = False
 color_actual = 'Rojo'
 colores = ["Rojo", "Amarillo", "Azul"]
 aux = 0
+area_prom = 0
+contador = 0
+busqueda_iniciada = False
 
-while True:
+while not azul_completado:
     ret, frame = cap.read()
     if not ret:
         break
@@ -125,46 +122,49 @@ while True:
     mask = cv2.inRange(hsv, lower, upper)
 
     # suavizado y operaciones de erosión y dilatación
-    # mask = cv2.GaussianBlur(mask, (5, 5), 0)
-    # mask = cv2.erode(mask, None, iterations=5)
-    # mask = cv2.dilate(mask, None, iterations=5)
+    mask = cv2.GaussianBlur(mask, (5, 5), 0)
+    mask = cv2.erode(mask, None, iterations=5)
+    mask = cv2.dilate(mask, None, iterations=5)
 
     # Encuentra contornos en la máscara
     contours, _ = cv2.findContours(
         mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    if contours:
+        busqueda_iniciada=False
+        largest_contour = max(contours, key=cv2.contourArea)
+        area = cv2.contourArea(largest_contour)
+        contador += 1
+        area_prom = (area_prom + area) / contador
 
-    for contour in contours:
-        
-        area = cv2.contourArea(contour)
-        print(area)
+        print("Área del contorno más grande:", area)
 
-        if area > 500:
+        if area >= area_prom:
             print("area > 500")
             # Calcula el centro del contorno
-            M = cv2.moments(contour)
+            M = cv2.moments(largest_contour)
             cx = int(M["m10"] / M["m00"])
             cy = int(M["m01"] / M["m00"])
 
             # Dibuja el contorno y muestra el color detectado
-            cv2.drawContours(frame, [contour], -1, (0, 255, 0), 3)
+            cv2.drawContours(frame, [largest_contour], -1, (0, 255, 0), 3)
             cv2.putText(frame, color_actual, (cx - 20, cy - 20),
                         cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
 
             # Verifica si el objeto está centrado en la pantalla
             if abs(cx - frame.shape[1] // 2) < 50:
-                forward(1.5)
+                forward(0.07)
                 print("adel")
+                #comienzo=False
 
             elif cx < frame.shape[1] // 2:
-                turn_left(0.05)
+                turn_left(0.02)
                 print("izq")
             else:
-                turn_right(0.05)
+                turn_right(0.02)
                 print("der")
 
             if (azul_completado):
                 vuelta_entera()
-                break
 
             total_area = frame.shape[0] * frame.shape[1]
 
@@ -172,19 +172,26 @@ while True:
                 aux+=1
                 if (aux < 3):
                     color_actual = colores[aux]
-                    
+                    print("meta: ", aux)
                     if(color_actual=='Amarillo'):
-                        giro_90_izq(1.3)
+                        giro_90_izq(1.5)
                     elif(color_actual=='Azul'):
-                        giro_130_izq(1)
+                        giro_130_izq()
                 else:
                     azul_completado = True
+                    vuelta_entera()
 
-    if (len(contours) ==  0):
-        turn_right(0.3)
-        reverse(0.5)
-        print("contours 0")
-        print(area)
+        # else:
+        #     turn_right(0.3)
+        #     reverse(0.5)
+        #     print("else contours")
+
+    else:
+        if not busqueda_iniciada:
+            reverse(0.3)
+            busqueda_iniciada = True
+        turn_right(0.05)
+        print("buscando meta")
 
     cv2.imshow("Video", frame)
     k = cv2.waitKey(1)
