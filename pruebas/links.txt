@@ -1,0 +1,12 @@
+https://www.youtube.com/watch?v=BzLCY6JO4Mg
+https://github.com/opencv/opencv/tree/master/data/haarcascades
+
+https://www.youtube.com/watch?v=zpRl8rEvjbo
+
+detección de objetos basado en CNN, como YOLO (You Only Look Once), Faster R-CNN, o SSD (Single Shot MultiBox Detector).
+
+https://www.youtube.com/watch?v=Hb5xHY4e2Mg
+
+https://github.com/ultralytics/yolov5
+
+https://www.makesense.ai/
