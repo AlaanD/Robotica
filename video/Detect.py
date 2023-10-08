@@ -4,7 +4,7 @@ import numpy as np
 
 #lectura modelo
 model=torch.hub.load('ultralytics/yolov5', 'custom',
-                      path='/model/carteles.pt')
+                      path='/home/robotica/Desktop/robotica/video/model/carteles.pt')
 
 cap=cv2.VideoCapture(0)
 
