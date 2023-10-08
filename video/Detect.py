@@ -4,9 +4,9 @@ import numpy as np
 
 #lectura modelo
 model=torch.hub.load('ultralytics/yolov5', 'custom',
-                      path='C:/Users/Ramiro/Documents/GitHub/Robotica/video/model/carteles.pt')
+                      path='/model/carteles.pt')
 
-cap=cv2.videoCapture(0)
+cap=cv2.VideoCapture(0)
 
 while True:
     ret,frame = cap.read()
