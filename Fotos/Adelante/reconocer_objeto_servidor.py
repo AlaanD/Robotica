@@ -7,11 +7,11 @@ image = cv2.imread('p/objeto_0.jpg')
 
 #lectura modelo
 model=torch.hub.load('ultralytics/yolov5', 'custom',
-                      path='model\carteles.pt')
+                      path='model/carteles.pt')
 
 
 detect=model(image)
-cv2.imshow('Detector de señales de transito', np.squeeze(detect.render()))
+cv2.imshow('Detector de seniales de transito', np.squeeze(detect.render()))
 
 while True:
     key = cv2.waitKey(5)
